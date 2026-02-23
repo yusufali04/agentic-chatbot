@@ -1,23 +1,50 @@
+import { useState, useRef, useEffect } from "react";
+
+interface Message {
+    text: string;
+    sender: "user" | "assistant";
+}
 
 const Home = () => {
+
+    const [message, setMessage] = useState("");
+    const [messages, setMessages] = useState<Message[]>([]);
+    const messagesEndRef = useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+        messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    }, [messages]);
+    // call send when enter is pressed in the textarea
+    const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+        if (e.key === "Enter" && !e.shiftKey) {
+            e.preventDefault();
+            handleSend();
+        }
+    }
+    const handleSend = () => {
+        if(message.trim() === "") return;
+        setMessages(prev => [...prev, {text: message, sender: "user"}]);
+        setMessages(prev => [...prev, { text: "Hi, this is an assistant message!", sender: "assistant" }]);
+        setMessage("");
+    }
     return (
         // hide scrollbar but still allow scrolling 
         <div className="text-white container mx-auto max-w-4xl p-4 h-full overflow-y-auto hide-scroll pb-45">
 
-            {/* messages goes here */}
-            <div className="my-6 bg-neutral-800 p-3 rounded-xl ml-auto w-fit">
-                Hi, How are you doing?
-            </div>
-            {/* assistant message */}
-            <div className="bg-primary p-3 rounded-xl mr-auto w-fit">
-                I am fine, How are you doing?
-            </div>
+            {
+                messages.map((msg, index) => (
+                    <div key={index} className={`${msg.sender === "user" ? "bg-neutral-800 ml-auto" : "bg-primary mr-auto"} p-3 rounded-xl w-fit my-2`}>
+                        {msg.text}
+                    </div>
+                ))
+            }
+            <div ref={messagesEndRef} />
             {/* bottom text area goes here */}
             <div className="fixed bottom-5 left-0 right-0 mx-auto max-w-4xl">
                 <div className="bg-neutral-800 rounded-xl p-4 mt-6">
-                    <textarea className="w-full p-3 rounded-xl text-white resize-none outline-none custom-scroll" placeholder="Type your message here..." rows={2} />
+                    <textarea className="w-full p-2 rounded-xl text-white resize-none outline-none custom-scroll" placeholder="Type your message here..." rows={2} value={message} onChange={(e) => setMessage(e.target.value)} onKeyDown={handleKeyDown}/>
                     <div className="flex justify-end items-center">
-                        <button className="bg-white text-black px-4 py-2 rounded-xl mt-2 cursor-pointer hover:bg-gray-200">Send</button>
+                        <button className="bg-white text-black px-4 py-2 rounded-xl mt-2 cursor-pointer hover:bg-gray-200" onClick={handleSend}>Send</button>
                     </div>
                 </div>
             </div>
