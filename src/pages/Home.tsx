@@ -1,9 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-
-interface Message {
-    text: string;
-    sender: "user" | "assistant";
-}
+import type { Message } from "../types";
 
 const Home = () => {
 
