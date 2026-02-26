@@ -15,5 +15,5 @@ export const chatController = async (req: Request, res: Response) => {
         ...messages
     ]
     const response = await generateResponse(completeChat);
-    res.json({ response });
+    res.json({ role: "assistant", content: response });
 };

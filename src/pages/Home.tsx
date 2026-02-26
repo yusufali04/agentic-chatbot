@@ -1,5 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import type { Message } from "../types";
+import { getResponse } from "../api/chat";
+import { useMutation } from "@tanstack/react-query";
 
 const Home = () => {
 
@@ -17,10 +19,20 @@ const Home = () => {
             handleSend();
         }
     }
-    const handleSend = () => {
+    const mutation = useMutation({
+        mutationFn: (messages: Message[]) => getResponse(messages),
+        onSuccess: (response) => {
+            setMessages(prev => [...prev, response.data]);
+        },
+    })
+    const handleSend = async () => {
         if(message.trim() === "") return;
-        setMessages(prev => [...prev, {text: message, sender: "user"}]);
-        setMessages(prev => [...prev, { text: "Hi, this is an assistant message!", sender: "assistant" }]);
+        const updatedMessages = [
+            ...messages,
+            { role: "user" as const, content: message }
+        ];
+        setMessages(updatedMessages);
+        mutation.mutate(updatedMessages);
         setMessage("");
     }
     return (
@@ -29,8 +41,8 @@ const Home = () => {
 
             {
                 messages.map((msg, index) => (
-                    <div key={index} className={`${msg.sender === "user" ? "bg-neutral-800 ml-auto" : "bg-primary mr-auto"} p-3 rounded-xl w-fit my-2`}>
-                        {msg.text}
+                    <div key={index} className={`${msg.role === "user" ? "bg-neutral-800 ml-auto" : "bg-primary mr-auto"} p-3 rounded-xl w-fit my-2`}>
+                        {msg.content}
                     </div>
                 ))
             }
